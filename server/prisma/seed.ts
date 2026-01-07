@@ -1,7 +1,10 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import fs from "fs";
+import fs from "fs";;
 import path from "path";
+import { fileURLToPath } from "url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const prisma = new PrismaClient();
 
 function sleep(ms: number) {
@@ -18,19 +21,19 @@ function toCamelCase(str: string): string {
 
 async function insertLocationData(locations: any[]) {
   for (const location of locations) {
-    const { id, country, city, state, address, postalCode, coordinates } =
-      location;
+    const { id, country, city, state, address, postalCode, coordinates } = location;
+
     try {
-      await prisma.$executeRaw`
-        INSERT INTO "Location" ("id", "country", "city", "state", "address", "postalCode", "coordinates") 
-        VALUES (${id}, ${country}, ${city}, ${state}, ${address}, ${postalCode}, ST_GeomFromText(${coordinates}, 4326));
-      `;
+      await prisma.location.create({
+        data: { id, country, city, state, address, postalCode, coordinates },
+      });
       console.log(`Inserted location for ${city}`);
     } catch (error) {
       console.error(`Error inserting location for ${city}:`, error);
     }
   }
 }
+
 
 async function resetSequence(modelName: string) {
   const quotedModelName = `"${toPascalCase(modelName)}"`;
